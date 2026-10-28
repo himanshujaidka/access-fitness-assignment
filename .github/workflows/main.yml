@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Lint
+        run: |
+          python -m py_compile app.py
+          python -m flake8 .
+
+      - name: Build Docker image
+        run: docker build -t aceest-fitness:ci .
+
+      - name: Run pytest inside the container
+        run: docker run --rm aceest-fitness:ci python -m pytest -v
