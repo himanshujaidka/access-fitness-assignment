@@ -22,7 +22,11 @@ pipeline {
 
         stage('Docker Build') {
             steps {
-                sh 'docker build --no-cache -t aceest-fitness:${BUILD_NUMBER} .'
+                sh '''
+                    docker build --no-cache \
+                        --secret id=extra_ca,src=/etc/ssl/certs/ca-certificates.crt \
+                        -t aceest-fitness:${BUILD_NUMBER} .
+                '''
             }
         }
 

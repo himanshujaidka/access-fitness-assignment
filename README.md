@@ -61,6 +61,42 @@ The image uses `python:3.12-slim`, installs deps with no pip cache, and runs gun
 
 ### Jenkins setup
 
+#### Local Jenkins with Docker Desktop (Windows)
+
+With Docker Desktop running Linux containers, run:
+
+```powershell
+.\jenkins\setup.ps1
+```
+
+The first build downloads Jenkins and its pipeline plugins. Open
+<http://localhost:8081>, sign in as `admin`, and retrieve the generated password
+locally with `Get-Content .\.jenkins-secrets\admin-password`. Never include the
+password in screenshots or commits. The setup creates the `aceest-fitness`
+pipeline job using this repository and polls `main` every five minutes.
+Select **Build Now** to run it immediately.
+
+If your company network intercepts HTTPS and the image build reports a certificate
+error, run `.\jenkins\setup.ps1 -UseWindowsCertificateTrust`. This exports only the
+issuer certificates from a connection successfully validated by Windows and adds
+them to the Jenkins image's OS and Java trust stores. These local certificates
+are excluded from Git. TLS verification remains enabled. Jenkins passes its CA
+bundle as an optional Docker build secret for pip downloads; normal builds on
+GitHub Actions do not need that secret.
+
+Jenkins is bound to localhost only. Its container runs as the `jenkins` user,
+but access to the Docker socket gives jobs control over Docker Desktop.
+Use this setup only for trusted assignment code, not untrusted pull requests or
+a publicly exposed Jenkins service. Build history is stored in a named volume.
+
+To stop Jenkins without removing its data:
+
+```powershell
+docker compose -f compose.jenkins.yml down
+```
+
+#### Existing Jenkins server
+
 Use a Linux agent with Git, Python 3 (including the `venv` module), and Docker.
 The Jenkins agent user must have permission to run Docker commands. The
 `Jenkinsfile` uses `sh`, so it is not intended for a native Windows agent.
